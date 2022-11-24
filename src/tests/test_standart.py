@@ -56,7 +56,11 @@ class StandartTestCase(unittest.TestCase):
 
     def test_reject_unrecognized_tree(self):
         with self.assertRaises(Exception) as context:
-            StandardMerkleTree.load(StandardMerkleTreeData(format='nonstandard'))
+            StandardMerkleTree.load(
+                StandardMerkleTreeData(
+                    tree=[], values=[], leaf_encoding=['uint256'], format='nonstandard'
+                )
+            )
             self.assertTrue("Unknown format 'nonstandard'" in context.exception)
 
     def test_reject_malformed(self):
@@ -80,17 +84,28 @@ class StandartTestCase(unittest.TestCase):
             tree2.get_proof(0)
             self.assertTrue("Unable to prove value" in context.exception)
 
-    #
-    # def test_render_tree(self):
-    #     "generates valid multiproofs"
-    #     _, tree = characters('abc')
+    def test_render_tree(self):
+        "generates valid multiproofs"
+        _, tree = characters('a')
 
-    #     expected = '''
-    # 0) f2129b5a697531ef818f644564a6552b35c549722385bc52aa7fe46c0b5f46b1
-    # ├─ 1) fa914d99a18dc32d9725b3ef1c50426deb40ec8d0885dac8edcc5bfd6d030016
-    # │  ├─ 3) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c
-    # │  └─ 4) 19ba6c6333e0e9a15bf67523e0676e2f23eb8e574092552d5e888c64a4bb3681
-    # └─ 2) 9cf5a63718145ba968a01c1d557020181c5b252f665cf7386d370eddb176517b
-    # '''
-    #     assert tree.render() == expected
-    #
+        expected = '''0) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c'''
+        self.assertEqual(str(tree), expected)
+
+        _, tree = characters('ab')
+        expected = '''
+0) fa914d99a18dc32d9725b3ef1c50426deb40ec8d0885dac8edcc5bfd6d030016
+├─ 1) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c
+└─ 2) 19ba6c6333e0e9a15bf67523e0676e2f23eb8e574092552d5e888c64a4bb3681
+        '''.strip()
+        self.assertEqual(str(tree), expected)
+
+        _, tree = characters('abc')
+
+        expected = '''
+0) f2129b5a697531ef818f644564a6552b35c549722385bc52aa7fe46c0b5f46b1
+├─ 1) fa914d99a18dc32d9725b3ef1c50426deb40ec8d0885dac8edcc5bfd6d030016
+│  ├─ 3) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c
+│  └─ 4) 19ba6c6333e0e9a15bf67523e0676e2f23eb8e574092552d5e888c64a4bb3681
+└─ 2) 9cf5a63718145ba968a01c1d557020181c5b252f665cf7386d370eddb176517b
+    '''.strip()
+        self.assertEqual(str(tree), expected)

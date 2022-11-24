@@ -15,9 +15,10 @@ class MultiProof:
 
 
 def hash_pair(a: bytes, b: bytes) -> bytes:
-    if compare_bytes(a, b) >= 0:
+    if compare_bytes(a, b) < 0:
         return Web3.keccak(concat_bytes(a, b))
-    return bytes(Web3.keccak(concat_bytes(b, a)))
+    # pylint: disable=arguments-out-of-order
+    return Web3.keccak(concat_bytes(b, a))
 
 
 def left_child_index(i: int) -> int:
@@ -53,7 +54,7 @@ def is_leaf_node(tree: List[Any], i: int) -> bool:
 
 
 def is_valid_merkle_node(node: bytes) -> bool:
-    return len(node) == 32  # todo: and node instanceof Uint8Array
+    return len(node) == 32
 
 
 def check_tree_node(tree: List[Any], i: int) -> None:
@@ -83,7 +84,6 @@ def make_merkle_tree(leaves: List[bytes]) -> List[bytes]:
     if len(leaves) == 0:
         raise ValueError("Expected non-zero number of leaves")
 
-    # tree = bytearray(2 * len(leaves) - 1)
     tree = [None] * (2 * len(leaves) - 1)
 
     for index, leaf in enumerate(leaves):
@@ -112,14 +112,13 @@ def process_proof(leaf: List[bytes], proof: List[bytes]) -> bytes:
     check_valid_merkle_node(leaf)
     for item in proof:
         check_valid_merkle_node(item)
-    from functools import reduce
     result = leaf
     for item in proof:
         result = hash_pair(item, result)
-    return result  # reduce(hash_pair, proof, initial=leaf)
+    return result
 
 
-def get_multi_proof(tree: List[bytes], indices: List[int]) -> MultiProof:  # <Bytes>
+def get_multi_proof(tree: List[bytes], indices: List[int]) -> MultiProof:
     for index in indices:
         check_leaf_node(tree, index)
 
@@ -198,30 +197,6 @@ def is_valid_merkle_tree(tree: List[bytes]) -> bool:
                 return False
 
         return len(tree) > 0
-
-
-def render_merkle_tree(tree: List[bytes]) -> str:
-    if len(tree) == 0:
-        raise ValueError("Expected non-zero number of nodes")
-
-    stack: List = [[0, []]]
-    lines: List = []
-
-    while len(stack) > 0:
-        i, path = stack.pop()
-
-        lines.append(
-            # path.slice(0, -1).map(p= > ['   ', '│  '][p]).join('') +
-            # path.slice(-1).map(p= > ['└─ ', '├─ '][p]).join('') +
-            # i + ') ' +
-            # bytesToHex(tree[i]!)
-        )
-
-        if right_child_index(i) < len(tree):
-            stack.append([right_child_index(i), path + [0]])
-            stack.append([left_child_index(i), path + [1]])
-
-    return '\n'.join(lines)
 
 
 def pop_safe(array: List[Any]) -> Any:

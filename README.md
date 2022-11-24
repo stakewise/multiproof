@@ -1,5 +1,6 @@
 # Stakewise python realization of `@openzeppelin/merkle-tree`
 
+## NB! Library is not ready for the production use
 
 **A Python library to generate merkle trees and merkle proofs.**
 
@@ -14,6 +15,6 @@ poetry install
 ```
 
 # todo
-- magic method for comparing, printing
+- magic method for comparing
 - extend tests
 - add docs

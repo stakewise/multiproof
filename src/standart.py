@@ -7,8 +7,8 @@ from web3 import Web3
 
 from src.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
 from src.core import (MultiProof, get_multi_proof, get_proof,
-                      is_valid_merkle_tree, make_merkle_tree,
-                      process_multi_proof, process_proof, render_merkle_tree)
+                      is_valid_merkle_tree, left_child_index, make_merkle_tree,
+                      process_multi_proof, process_proof, right_child_index)
 from src.utils import check_bounds
 
 
@@ -98,9 +98,7 @@ class StandardMerkleTree:
             leaf_encoding=self.leaf_encoding
         )
 
-    def render(self) -> str:
-        return render_merkle_tree(self.tree)
-
+    @property
     def root(self) -> str:
         return to_hex(self.tree[0])
 
@@ -120,21 +118,19 @@ class StandardMerkleTree:
             raise ValueError("Leaf is not in tree")
         return v
 
-    def get_proof(self, leaf: Union[LeafValue,int]) -> List[str]:
+    def get_proof(self, leaf: Union[LeafValue, int]) -> List[str]:
         # input validity
-
         value_index = leaf
         if not isinstance(leaf, int):
             value_index = self.leaf_lookup(leaf)
         self._validate_value(value_index)
 
         # rebuild tree index and generate proof
-        leaf = self.values[value_index]
-        # tree_index = LeafValue(value_index=self.values[value_index])
+        tree_index = self.values[value_index].tree_index
+        proof = get_proof(self.tree, tree_index)
 
-        proof = get_proof(self.tree, leaf.tree_index)
         # check proof
-        thee_hash = self.tree[leaf.tree_index]
+        thee_hash = self.tree[tree_index]
         implied_root = process_proof(thee_hash, proof)
 
         if not equals_bytes(implied_root, self.tree[0]):
@@ -152,7 +148,8 @@ class StandardMerkleTree:
             else:
                 value_indices.append(self.leaf_lookup(leaf))
 
-        [self._validate_value(x) for x in value_indices]
+        for value in value_indices:
+            self._validate_value(value)
 
         # rebuild tree indices and generate proof
         indices = [self.values[i].tree_index for i in value_indices]
@@ -165,7 +162,9 @@ class StandardMerkleTree:
 
         # return multiproof in hex format
         return MultiProof(
-            leaves=[],  # todo leaves: proof.leaves.map(hash= > this.values[this.hashLookup[hex(hash)]!]!.value),
+            leaves=[
+                self.values[self._hash_lookup[to_hex(hash)]].value for hash in proof.leaves
+            ],
             proof=[to_hex(x) for x in proof.proof],
             proof_flags=proof.proof_flags,
         )
@@ -179,16 +178,24 @@ class StandardMerkleTree:
         if not equals_bytes(leaf_hash, self.tree[leaf.tree_index]):
             raise ValueError("Merkle tree does not contain the expected value")
 
+    def __str__(self):
+        if len(self.tree) == 0:
+            raise ValueError("Expected non-zero number of nodes")
 
-if __name__ == '__main__':
-    ZERO_BYTES = bytearray(32)
-    ZERO = to_hex(ZERO_BYTES)
+        stack: List = [[0, []]]
+        lines: List = []
 
-    mt = StandardMerkleTree.load(StandardMerkleTreeData(
-        tree=[ZERO],
-        values=[LeafValue(
-            value=[0],
-            tree_index=0,
-        )],
-        leaf_encoding=['uint256'],
-    ))
+        while len(stack) > 0:
+            i, path = stack.pop()
+            s = ''
+
+            if len(path):
+                s += ''.join([['   ', '│  '][p] for p in path[:-1]]) + ['└─ ', '├─ '][path[-1]]
+            s += str(i) + ') ' + to_hex(self.tree[i])[2:]
+
+            lines.append(s)
+            if right_child_index(i) < len(self.tree):
+                stack.append([right_child_index(i), path + [0]])
+                stack.append([left_child_index(i), path + [1]])
+
+        return '\n'.join(lines)
