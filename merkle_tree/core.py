@@ -4,7 +4,7 @@ from typing import Any, List
 
 from web3 import Web3
 
-from src.bytes import compare_bytes, concat_bytes, equals_bytes
+from merkle_tree.bytes import compare_bytes, concat_bytes, equals_bytes
 
 
 @dataclass

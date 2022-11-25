@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Union
 from eth_abi import encode as abi_encode
 from web3 import Web3
 
-from src.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
-from src.core import (MultiProof, get_multi_proof, get_proof,
+from merkle_tree.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
+from merkle_tree.core import (MultiProof, get_multi_proof, get_proof,
                       is_valid_merkle_tree, left_child_index, make_merkle_tree,
                       process_multi_proof, process_proof, right_child_index)
-from src.utils import check_bounds
+from merkle_tree.utils import check_bounds
 
 
 @dataclass

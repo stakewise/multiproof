@@ -2,8 +2,8 @@ import unittest
 
 from web3 import Web3
 
-from src.bytes import to_hex
-from src.standart import LeafValue, StandardMerkleTree, StandardMerkleTreeData
+from merkle_tree.bytes import to_hex
+from merkle_tree.standart import LeafValue, StandardMerkleTree, StandardMerkleTreeData
 
 ZERO_BYTES = bytearray(32)
 ZERO = to_hex(ZERO_BYTES)
