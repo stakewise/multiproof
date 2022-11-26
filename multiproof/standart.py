@@ -5,11 +5,12 @@ from typing import Any, Dict, List, Union
 from eth_abi import encode as abi_encode
 from web3 import Web3
 
-from merkle_tree.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
-from merkle_tree.core import (MultiProof, get_multi_proof, get_proof,
-                      is_valid_merkle_tree, left_child_index, make_merkle_tree,
-                      process_multi_proof, process_proof, right_child_index)
-from merkle_tree.utils import check_bounds
+from multiproof.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
+from multiproof.core import (MultiProof, get_multi_proof, get_proof,
+                             is_valid_merkle_tree, left_child_index,
+                             make_merkle_tree, process_multi_proof,
+                             process_proof, right_child_index)
+from multiproof.utils import check_bounds
 
 
 @dataclass
@@ -68,7 +69,7 @@ class StandardMerkleTree:
             )
         hashed_values = sorted(
             hashed_values,
-            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash))
+            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash))  # type: ignore
         )
 
         tree = make_merkle_tree([x.hash for x in hashed_values])
@@ -120,7 +121,7 @@ class StandardMerkleTree:
 
     def get_proof(self, leaf: Union[LeafValue, int]) -> List[str]:
         # input validity
-        value_index = leaf
+        value_index: int = leaf  # type: ignore
         if not isinstance(leaf, int):
             value_index = self.leaf_lookup(leaf)
         self._validate_value(value_index)

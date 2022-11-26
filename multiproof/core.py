@@ -4,7 +4,7 @@ from typing import Any, List
 
 from web3 import Web3
 
-from merkle_tree.bytes import compare_bytes, concat_bytes, equals_bytes
+from multiproof.bytes import compare_bytes, concat_bytes, equals_bytes
 
 
 @dataclass
@@ -84,7 +84,7 @@ def make_merkle_tree(leaves: List[bytes]) -> List[bytes]:
     if len(leaves) == 0:
         raise ValueError("Expected non-zero number of leaves")
 
-    tree = [None] * (2 * len(leaves) - 1)
+    tree: List[bytes] = [b''] * (2 * len(leaves) - 1)
 
     for index, leaf in enumerate(leaves):
         tree[len(tree) - 1 - index] = leaf
@@ -108,7 +108,7 @@ def get_proof(tree: List[bytes], index: int) -> List[bytes]:
     return proof
 
 
-def process_proof(leaf: List[bytes], proof: List[bytes]) -> bytes:
+def process_proof(leaf: bytes, proof: List[bytes]) -> bytes:
     check_valid_merkle_node(leaf)
     for item in proof:
         check_valid_merkle_node(item)
@@ -187,16 +187,17 @@ def is_valid_merkle_tree(tree: List[bytes]) -> bool:
     for i, node in enumerate(tree):
         if not is_valid_merkle_node(node):
             return False
+
         l = left_child_index(i)
         r = right_child_index(i)
 
         if r >= len(tree):
             if l < len(tree):
                 return False
-            if not equals_bytes(node, hash_pair(tree[l], tree[r])):
-                return False
+        elif not equals_bytes(node, hash_pair(tree[l], tree[r])):
+            return False
 
-        return len(tree) > 0
+    return len(tree) > 0
 
 
 def pop_safe(array: List[Any]) -> Any:
