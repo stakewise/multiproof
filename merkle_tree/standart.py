@@ -68,7 +68,7 @@ class StandardMerkleTree:
             )
         hashed_values = sorted(
             hashed_values,
-            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash))
+            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash))  # type: ignore
         )
 
         tree = make_merkle_tree([x.hash for x in hashed_values])
@@ -120,7 +120,7 @@ class StandardMerkleTree:
 
     def get_proof(self, leaf: Union[LeafValue, int]) -> List[str]:
         # input validity
-        value_index = leaf
+        value_index: int = leaf  # type: ignore
         if not isinstance(leaf, int):
             value_index = self.leaf_lookup(leaf)
         self._validate_value(value_index)
