@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "multiproof"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python library to generate merkle trees and merkle proofs."
 authors = ["StakeWise Labs <info@stakewise.io>"]
 readme = "README.md"
@@ -13,8 +13,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-web3 = "^6.0.0b7"
-eth-abi = "^3.0.1"
+web3 = "==6.8.0"
+eth-abi = "==4.1.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.5"
