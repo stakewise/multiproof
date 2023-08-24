@@ -91,6 +91,27 @@ class StandardMerkleTree:
             data.leaf_encoding,
         )
 
+    @staticmethod
+    def verify(root: str, leaf_encoding: list[str], leaf_value: Any, proof: list[str]) -> bool:
+        leaf_hash = standard_leaf_hash(leaf_value, leaf_encoding)
+        implied_root = process_proof(leaf_hash,  [hex_to_bytes(x) for x in proof])
+        return equals_bytes(implied_root, hex_to_bytes(root))
+
+    @staticmethod
+    def verify_multi_proof(root: str, leaf_encoding: list[str], multiproof: MultiProof) -> bool:
+        leaf_hashes = [standard_leaf_hash(value, leaf_encoding) for value in multiproof.leaves]
+        proof_bytes = [hex_to_bytes(x) for x in multiproof.proof]
+        implied_root = process_multi_proof(
+            multiproof=MultiProof(
+                leaves=leaf_hashes,
+                proof=proof_bytes,
+                proof_flags=multiproof.proof_flags,
+
+            )
+        )
+
+        return equals_bytes(implied_root, hex_to_bytes(root))
+
     def dump(self) -> StandardMerkleTreeData:
         return StandardMerkleTreeData(
             format='standard-v1',

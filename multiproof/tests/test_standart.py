@@ -28,6 +28,15 @@ class StandartTestCase(unittest.TestCase):
             proof1 = tree.get_proof(index)
             proof2 = tree.get_proof(leaf.value)
             assert proof1 == proof2  # deep equal
+            assert StandardMerkleTree.verify(tree.root, ['string'], leaf.value, proof1)
+
+    def test_invalid_single_proofs(self):
+        "rejects invalid proofs"
+        _, tree = characters('abcdef')
+        _, other_tree = characters('abc')
+        leaf = ['a']
+        invalid_proof = other_tree.get_proof(leaf)
+        assert not StandardMerkleTree.verify(tree.root, ['string'], leaf, invalid_proof)
 
     def test_valid_multiproofs(self):
         "generates valid multiproofs"
@@ -39,6 +48,17 @@ class StandartTestCase(unittest.TestCase):
             proof1 = tree.get_multi_proof(ids)
             proof2 = tree.get_multi_proof([values[i] for i in ids])
             assert proof1 == proof2  # deep equal
+            pf = tree.get_multi_proof(ids)
+            assert StandardMerkleTree.verify_multi_proof(tree.root, ['string'], pf)
+
+    def test_invalid_multiproofs(self):
+        "reject invalid multiproofs"
+        _, tree = characters('abcdef')
+        _, other_tree = characters('abc')
+        leaves = [['a'], ['b'], ['c']]
+        multi_proof = other_tree.get_multi_proof(leaves)
+
+        assert not StandardMerkleTree.verify_multi_proof(tree.root, ['string'], multi_proof)
 
     def test_dump_and_load(self):
         _, tree = characters('abcdef')
