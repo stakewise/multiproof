@@ -29,5 +29,4 @@ print('Merkle Root:', tree.root)
 ```
 
 # todos
-- extend tests
 - add docs

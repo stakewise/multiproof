@@ -42,4 +42,4 @@ def equals_bytes(a: bytes, b: bytes) -> bool:
 
 
 def concat_bytes(a: bytes, b: bytes) -> bytes:
-    return a+b
+    return a + b

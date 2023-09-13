@@ -17,7 +17,6 @@ def characters(s: str):
 
 
 class StandartTestCase(unittest.TestCase):
-
     def test_valid_single_proofs(self):
         "generates valid single proofs for all leaves"
         _, tree = characters('abcdef')
@@ -28,6 +27,8 @@ class StandartTestCase(unittest.TestCase):
             proof1 = tree.get_proof(index)
             proof2 = tree.get_proof(leaf.value)
             assert proof1 == proof2  # deep equal
+            assert tree.verify_leaf(index, proof1)
+            assert tree.verify_leaf(leaf, proof1)
             assert StandardMerkleTree.verify(tree.root, ['string'], leaf.value, proof1)
 
     def test_invalid_single_proofs(self):
@@ -36,6 +37,7 @@ class StandartTestCase(unittest.TestCase):
         _, other_tree = characters('abc')
         leaf = ['a']
         invalid_proof = other_tree.get_proof(leaf)
+        assert not tree.verify_leaf(leaf, invalid_proof)
         assert not StandardMerkleTree.verify(tree.root, ['string'], leaf, invalid_proof)
 
     def test_valid_multiproofs(self):
@@ -49,6 +51,7 @@ class StandartTestCase(unittest.TestCase):
             proof2 = tree.get_multi_proof([values[i] for i in ids])
             assert proof1 == proof2  # deep equal
             pf = tree.get_multi_proof(ids)
+            assert tree.verify_multi_proof_leaf(proof1)
             assert StandardMerkleTree.verify_multi_proof(tree.root, ['string'], pf)
 
     def test_invalid_multiproofs(self):
@@ -57,7 +60,7 @@ class StandartTestCase(unittest.TestCase):
         _, other_tree = characters('abc')
         leaves = [['a'], ['b'], ['c']]
         multi_proof = other_tree.get_multi_proof(leaves)
-
+        assert not tree.verify_multi_proof_leaf(multi_proof)
         assert not StandardMerkleTree.verify_multi_proof(tree.root, ['string'], multi_proof)
 
     def test_dump_and_load(self):
@@ -86,22 +89,26 @@ class StandartTestCase(unittest.TestCase):
 
     def test_reject_malformed(self):
         with self.assertRaises(Exception) as context:
-            tree1 = StandardMerkleTree.load(StandardMerkleTreeData(
-                format='standard-v1',
-                tree=[ZERO],
-                values=[LeafValue(value=['0'], tree_index=0)],
-                leaf_encoding=['uint256'],
-            ))
+            tree1 = StandardMerkleTree.load(
+                StandardMerkleTreeData(
+                    format='standard-v1',
+                    tree=[ZERO],
+                    values=[LeafValue(value=['0'], tree_index=0)],
+                    leaf_encoding=['uint256'],
+                )
+            )
             tree1.get_proof(0)
             self.assertTrue("Merkle tree does not contain the expected value" in context.exception)
 
         with self.assertRaises(Exception) as context:
-            tree2 = StandardMerkleTree.load(StandardMerkleTreeData(
-                format='standard-v1',
-                tree=[ZERO, ZERO, to_hex(Web3.keccak(Web3.keccak(ZERO_BYTES)))],
-                values=[LeafValue(value=['0'], tree_index=2)],
-                leaf_encoding=['uint256'],
-            ))
+            tree2 = StandardMerkleTree.load(
+                StandardMerkleTreeData(
+                    format='standard-v1',
+                    tree=[ZERO, ZERO, to_hex(Web3.keccak(Web3.keccak(ZERO_BYTES)))],
+                    values=[LeafValue(value=['0'], tree_index=2)],
+                    leaf_encoding=['uint256'],
+                )
+            )
             tree2.get_proof(0)
             self.assertTrue("Unable to prove value" in context.exception)
 
