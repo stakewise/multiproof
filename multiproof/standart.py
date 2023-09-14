@@ -44,11 +44,7 @@ class StandardMerkleTree:
     values: List[LeafValue]
     leaf_encoding: List[str]
 
-    def __init__(self,
-                 tree: List[bytes],
-                 values: List[LeafValue],
-                 leaf_encoding: List[str]
-                 ):
+    def __init__(self, tree: List[bytes], values: List[LeafValue], leaf_encoding: List[str]):
         self.tree = tree
         self.values = values
         self.leaf_encoding = leaf_encoding
@@ -61,15 +57,11 @@ class StandardMerkleTree:
         hashed_values: List[HashedValue] = []
         for index, value in enumerate(values):
             hashed_values.append(
-                HashedValue(
-                    value=value,
-                    index=index,
-                    hash=standard_leaf_hash(value, leaf_encoding)
-                )
+                HashedValue(value=value, index=index, hash=standard_leaf_hash(value, leaf_encoding))
             )
         hashed_values = sorted(
             hashed_values,
-            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash))  # type: ignore
+            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash)),  # type: ignore
         )
 
         tree = make_merkle_tree([x.hash for x in hashed_values])
@@ -82,7 +74,7 @@ class StandardMerkleTree:
         return StandardMerkleTree(tree, indexed_values, leaf_encoding)
 
     @staticmethod
-    def load(data: StandardMerkleTreeData):
+    def load(data: StandardMerkleTreeData) -> 'StandardMerkleTree':
         if data.format != 'standard-v1':
             raise ValueError(f"Unknown format '{data.format}'")
         return StandardMerkleTree(
@@ -94,7 +86,7 @@ class StandardMerkleTree:
     @staticmethod
     def verify(root: str, leaf_encoding: list[str], leaf_value: Any, proof: list[str]) -> bool:
         leaf_hash = standard_leaf_hash(leaf_value, leaf_encoding)
-        implied_root = process_proof(leaf_hash,  [hex_to_bytes(x) for x in proof])
+        implied_root = process_proof(leaf_hash, [hex_to_bytes(x) for x in proof])
         return equals_bytes(implied_root, hex_to_bytes(root))
 
     @staticmethod
@@ -106,7 +98,6 @@ class StandardMerkleTree:
                 leaves=leaf_hashes,
                 proof=proof_bytes,
                 proof_flags=multiproof.proof_flags,
-
             )
         )
 
@@ -117,7 +108,7 @@ class StandardMerkleTree:
             format='standard-v1',
             tree=[to_hex(v) for v in self.tree],
             values=self.values,
-            leaf_encoding=self.leaf_encoding
+            leaf_encoding=self.leaf_encoding,
         )
 
     @property
@@ -184,14 +175,32 @@ class StandardMerkleTree:
 
         # return multiproof in hex format
         return MultiProof(
-            leaves=[
-                self.values[self._hash_lookup[to_hex(hash)]].value for hash in proof.leaves
-            ],
+            leaves=[self.values[self._hash_lookup[to_hex(hash)]].value for hash in proof.leaves],
             proof=[to_hex(x) for x in proof.proof],
             proof_flags=proof.proof_flags,
         )
 
-    def _validate_value(self, value_index: int):
+    def verify_leaf(self, leaf: int, proof: list[str]) -> bool:
+        return self._verify_leaf(self._get_leaf_hash(leaf), [hex_to_bytes(p) for p in proof])
+
+    def _verify_leaf(self, leaf_hash: bytes, proof: List[bytes]) -> bool:
+        implied_root = process_proof(leaf_hash, proof)
+        return equals_bytes(implied_root, self.tree[0])
+
+    def verify_multi_proof_leaf(self, multiproof: MultiProof) -> bool:
+        return self._verify_multi_proof_leaf(
+            MultiProof(
+                leaves=[self._get_leaf_hash(leaf) for leaf in multiproof.leaves],
+                proof=[hex_to_bytes(proof) for proof in multiproof.proof],
+                proof_flags=multiproof.proof_flags,
+            )
+        )
+
+    def _verify_multi_proof_leaf(self, multi_proof: MultiProof) -> bool:
+        implied_root = process_multi_proof(multi_proof)
+        return equals_bytes(implied_root, self.tree[0])
+
+    def _validate_value(self, value_index: int) -> bytes:
         check_bounds(self.values, value_index)
         leaf: LeafValue = self.values[value_index]
         check_bounds(self.tree, leaf.tree_index)
@@ -199,6 +208,14 @@ class StandardMerkleTree:
 
         if not equals_bytes(leaf_hash, self.tree[leaf.tree_index]):
             raise ValueError("Merkle tree does not contain the expected value")
+        return leaf_hash
+
+    def _get_leaf_hash(self, leaf: int) -> bytes:
+        if isinstance(leaf, int):
+            return self._validate_value(leaf)
+        if isinstance(leaf, LeafValue):
+            return standard_leaf_hash(leaf.value, self.leaf_encoding)
+        return standard_leaf_hash(leaf, self.leaf_encoding)
 
     def __str__(self):
         if len(self.tree) == 0:
