@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cmp_to_key
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from eth_abi import encode as abi_encode
 from web3 import Web3
@@ -21,9 +21,9 @@ class LeafValue:
 
 @dataclass
 class StandardMerkleTreeData:
-    tree: List[str]
-    values: List[LeafValue]
-    leaf_encoding: List[str]
+    tree: list[str]
+    values: list[LeafValue]
+    leaf_encoding: list[str]
     format: str = 'standard-v1'
 
 
@@ -34,17 +34,17 @@ class HashedValue:
     hash: bytes
 
 
-def standard_leaf_hash(values: Any, types: List[str]) -> bytes:
+def standard_leaf_hash(values: Any, types: list[str]) -> bytes:
     return Web3.keccak(Web3.keccak(abi_encode(types, values)))
 
 
 class StandardMerkleTree:
-    _hash_lookup: Dict[str, int]
-    tree: List[bytes]
-    values: List[LeafValue]
-    leaf_encoding: List[str]
+    _hash_lookup: dict[str, int]
+    tree: list[bytes]
+    values: list[LeafValue]
+    leaf_encoding: list[str]
 
-    def __init__(self, tree: List[bytes], values: List[LeafValue], leaf_encoding: List[str]):
+    def __init__(self, tree: list[bytes], values: list[LeafValue], leaf_encoding: list[str]):
         self.tree = tree
         self.values = values
         self.leaf_encoding = leaf_encoding
@@ -53,8 +53,8 @@ class StandardMerkleTree:
             self._hash_lookup[to_hex(standard_leaf_hash(leaf_value.value, leaf_encoding))] = index
 
     @staticmethod
-    def of(values: List[Any], leaf_encoding: List[str]):
-        hashed_values: List[HashedValue] = []
+    def of(values: list[Any], leaf_encoding: list[str]) -> 'StandardMerkleTree':
+        hashed_values: list[HashedValue] = []
         for index, value in enumerate(values):
             hashed_values.append(
                 HashedValue(value=value, index=index, hash=standard_leaf_hash(value, leaf_encoding))
@@ -122,16 +122,16 @@ class StandardMerkleTree:
         if not is_valid_merkle_tree(self.tree):
             raise ValueError("Merkle tree is invalid")
 
-    def leaf_hash(self, leaf) -> str:
+    def leaf_hash(self, leaf: Any) -> str:
         return to_hex(standard_leaf_hash(leaf, self.leaf_encoding))
 
-    def leaf_lookup(self, leaf) -> int:
+    def leaf_lookup(self, leaf: Any) -> int:
         v = self._hash_lookup[self.leaf_hash(leaf)]
         if v is None:
             raise ValueError("Leaf is not in tree")
         return v
 
-    def get_proof(self, leaf: Union[LeafValue, int]) -> List[str]:
+    def get_proof(self, leaf: LeafValue | int) -> list[str]:
         # input validity
         value_index: int = leaf  # type: ignore
         if not isinstance(leaf, int):
@@ -151,7 +151,7 @@ class StandardMerkleTree:
 
         return [to_hex(p) for p in proof]
 
-    def get_multi_proof(self, leaves) -> MultiProof:
+    def get_multi_proof(self, leaves: list[Any]) -> MultiProof:
         # input validity
         value_indices = []
         for leaf in leaves:
@@ -183,7 +183,7 @@ class StandardMerkleTree:
     def verify_leaf(self, leaf: int, proof: list[str]) -> bool:
         return self._verify_leaf(self._get_leaf_hash(leaf), [hex_to_bytes(p) for p in proof])
 
-    def _verify_leaf(self, leaf_hash: bytes, proof: List[bytes]) -> bool:
+    def _verify_leaf(self, leaf_hash: bytes, proof: list[bytes]) -> bool:
         implied_root = process_proof(leaf_hash, proof)
         return equals_bytes(implied_root, self.tree[0])
 
@@ -221,8 +221,8 @@ class StandardMerkleTree:
         if len(self.tree) == 0:
             raise ValueError("Expected non-zero number of nodes")
 
-        stack: List = [[0, []]]
-        lines: List = []
+        stack: list = [[0, []]]
+        lines: list = []
 
         while len(stack) > 0:
             i, path = stack.pop()

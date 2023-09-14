@@ -10,7 +10,7 @@ ZERO_BYTES = bytearray(32)
 ZERO = to_hex(ZERO_BYTES)
 
 
-def characters(s: str):
+def characters(s: str) -> tuple[list[list[str]], StandardMerkleTree]:
     l = [[x] for x in s]
     tree = StandardMerkleTree.of(l, ['string'])
     return l, tree

@@ -40,6 +40,7 @@ select = ["E121"]
 [tool.mypy]
 ignore_missing_imports = true
 python_version = "3.10"
+disallow_incomplete_defs = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
