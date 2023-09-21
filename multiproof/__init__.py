@@ -1,1 +1,1 @@
-from .standart import StandardMerkleTree, StandardMerkleTreeData
+from .standard import StandardMerkleTree, StandardMerkleTreeData
