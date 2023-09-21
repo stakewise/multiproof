@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any
 
 from web3 import Web3
 
@@ -9,9 +9,9 @@ from multiproof.bytes import compare_bytes, concat_bytes, equals_bytes
 
 @dataclass
 class MultiProof:
-    leaves: List[Any]
-    proof: List[Any]
-    proof_flags: List[bool]
+    leaves: list[Any]
+    proof: list[Any]
+    proof_flags: list[bool]
 
 
 def hash_pair(a: bytes, b: bytes) -> bytes:
@@ -41,15 +41,15 @@ def sibling_index(i: int) -> int:
     raise ValueError('Root has no siblings')
 
 
-def is_tree_node(tree: List[Any], i: int) -> bool:
+def is_tree_node(tree: list[Any], i: int) -> bool:
     return 0 <= i < len(tree)
 
 
-def is_internal_node(tree: List[Any], i: int) -> bool:
+def is_internal_node(tree: list[Any], i: int) -> bool:
     return is_tree_node(tree, left_child_index(i))
 
 
-def is_leaf_node(tree: List[Any], i: int) -> bool:
+def is_leaf_node(tree: list[Any], i: int) -> bool:
     return is_tree_node(tree, i) and not is_internal_node(tree, i)
 
 
@@ -57,17 +57,17 @@ def is_valid_merkle_node(node: bytes) -> bool:
     return len(node) == 32
 
 
-def check_tree_node(tree: List[Any], i: int) -> None:
+def check_tree_node(tree: list[Any], i: int) -> None:
     if not is_tree_node(tree, i):
         raise ValueError("Index is not in tree")
 
 
-def check_internal_node(tree: List[Any], i: int) -> None:
+def check_internal_node(tree: list[Any], i: int) -> None:
     if not is_internal_node(tree, i):
         raise ValueError("Index is not an internal tree node")
 
 
-def check_leaf_node(tree: List[Any], i: int) -> None:
+def check_leaf_node(tree: list[Any], i: int) -> None:
     if not is_leaf_node(tree, i):
         raise ValueError("Index is not a leaf")
 
@@ -77,14 +77,14 @@ def check_valid_merkle_node(node: bytes) -> None:
         raise ValueError("Merkle tree nodes must be Uint8Array of length 32")
 
 
-def make_merkle_tree(leaves: List[bytes]) -> List[bytes]:
+def make_merkle_tree(leaves: list[bytes]) -> list[bytes]:
     for leaf in leaves:
         check_valid_merkle_node(leaf)
 
     if len(leaves) == 0:
         raise ValueError("Expected non-zero number of leaves")
 
-    tree: List[bytes] = [b''] * (2 * len(leaves) - 1)
+    tree: list[bytes] = [b''] * (2 * len(leaves) - 1)
 
     for index, leaf in enumerate(leaves):
         tree[len(tree) - 1 - index] = leaf
@@ -97,7 +97,7 @@ def make_merkle_tree(leaves: List[bytes]) -> List[bytes]:
     return tree
 
 
-def get_proof(tree: List[bytes], index: int) -> List[bytes]:
+def get_proof(tree: list[bytes], index: int) -> list[bytes]:
     check_leaf_node(tree, index)
 
     proof = []
@@ -108,7 +108,7 @@ def get_proof(tree: List[bytes], index: int) -> List[bytes]:
     return proof
 
 
-def process_proof(leaf: bytes, proof: List[bytes]) -> bytes:
+def process_proof(leaf: bytes, proof: list[bytes]) -> bytes:
     check_valid_merkle_node(leaf)
     for item in proof:
         check_valid_merkle_node(item)
@@ -118,7 +118,7 @@ def process_proof(leaf: bytes, proof: List[bytes]) -> bytes:
     return result
 
 
-def get_multi_proof(tree: List[bytes], indices: List[int]) -> MultiProof:
+def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
     for index in indices:
         check_leaf_node(tree, index)
 
@@ -183,7 +183,7 @@ def process_multi_proof(multiproof: MultiProof) -> bytes:
     return pop_safe(stack) or proof.pop(0)
 
 
-def is_valid_merkle_tree(tree: List[bytes]) -> bool:
+def is_valid_merkle_tree(tree: list[bytes]) -> bool:
     for i, node in enumerate(tree):
         if not is_valid_merkle_node(node):
             return False
@@ -200,7 +200,7 @@ def is_valid_merkle_tree(tree: List[bytes]) -> bool:
     return len(tree) > 0
 
 
-def pop_safe(array: List[Any]) -> Any:
+def pop_safe(array: list[Any]) -> Any:
     try:
         return array.pop()
     except IndexError:
