@@ -1,25 +1,30 @@
-def has_hex_prefix(hex_string: str) -> bool:
+from typing import cast
+
+from eth_typing import HexStr
+
+
+def has_hex_prefix(hex_string: str | HexStr) -> bool:
     return hex_string.startswith("0x")
 
 
-def add_hex_prefix(hex_string: str) -> str:
+def add_hex_prefix(hex_string: str) -> HexStr:
     if not has_hex_prefix(hex_string):
-        return "0x" + hex_string
-    return hex_string
+        return HexStr("0x" + hex_string)
+    return cast(HexStr, hex_string)
 
 
-def remove_hex_prefix(hex_string: str) -> str:
+def remove_hex_prefix(hex_string: HexStr) -> str:
     if has_hex_prefix(hex_string):
         return hex_string[len("0x"):]
 
     return hex_string
 
 
-def to_hex(b: bytes) -> str:
+def to_hex(b: bytes) -> HexStr:
     return add_hex_prefix(b.hex())
 
 
-def hex_to_bytes(hex_string: str) -> bytes:
+def hex_to_bytes(hex_string: HexStr) -> bytes:
     return bytes.fromhex(remove_hex_prefix(hex_string))
 
 

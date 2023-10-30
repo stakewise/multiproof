@@ -1,1 +1,1 @@
-from .standard import StandardMerkleTree, StandardMerkleTreeData
+from .standard import MultiProof, StandardMerkleTree, StandardMerkleTreeData
