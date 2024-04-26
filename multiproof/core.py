@@ -42,15 +42,15 @@ def sibling_index(i: int) -> int:
     raise ValueError('Root has no siblings')
 
 
-def is_tree_node(tree: list[Any], i: int) -> bool:
+def is_tree_node(tree: list[bytes], i: int) -> bool:
     return 0 <= i < len(tree)
 
 
-def is_internal_node(tree: list[Any], i: int) -> bool:
+def is_internal_node(tree: list[bytes], i: int) -> bool:
     return is_tree_node(tree, left_child_index(i))
 
 
-def is_leaf_node(tree: list[Any], i: int) -> bool:
+def is_leaf_node(tree: list[bytes], i: int) -> bool:
     return is_tree_node(tree, i) and not is_internal_node(tree, i)
 
 
@@ -58,17 +58,17 @@ def is_valid_merkle_node(node: bytes) -> bool:
     return len(node) == 32
 
 
-def check_tree_node(tree: list[Any], i: int) -> None:
+def check_tree_node(tree: list[bytes], i: int) -> None:
     if not is_tree_node(tree, i):
         raise ValueError("Index is not in tree")
 
 
-def check_internal_node(tree: list[Any], i: int) -> None:
+def check_internal_node(tree: list[bytes], i: int) -> None:
     if not is_internal_node(tree, i):
         raise ValueError("Index is not an internal tree node")
 
 
-def check_leaf_node(tree: list[Any], i: int) -> None:
+def check_leaf_node(tree: list[bytes], i: int) -> None:
     if not is_leaf_node(tree, i):
         raise ValueError("Index is not a leaf")
 
