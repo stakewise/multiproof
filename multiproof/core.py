@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Any
 
 from web3 import Web3
@@ -124,8 +125,8 @@ def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
 
     indices = sorted(indices, reverse=True)
 
-    for i, p in enumerate(indices[1:]):
-        if p == indices[i]:
+    for prev_index, next_index in pairwise(indices):
+        if prev_index == next_index:
             raise ValueError("Cannot prove duplicated index")
 
     stack = indices[:]
