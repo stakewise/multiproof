@@ -9,9 +9,9 @@ from multiproof.bytes import compare_bytes, concat_bytes, equals_bytes
 
 
 @dataclass
-class MultiProof:
-    leaves: list[Any]
-    proof: list[Any]
+class CoreMultiProof:
+    leaves: list[bytes]
+    proof: list[bytes]
     proof_flags: list[bool]
 
 
@@ -119,7 +119,7 @@ def process_proof(leaf: bytes, proof: list[bytes]) -> bytes:
     return result
 
 
-def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
+def get_multi_proof(tree: list[bytes], indices: list[int]) -> CoreMultiProof:
     for index in indices:
         check_leaf_node(tree, index)
 
@@ -150,14 +150,14 @@ def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
     if len(indices) == 0:
         proof.append(tree[0])
 
-    return MultiProof(
+    return CoreMultiProof(
         leaves=[tree[i] for i in indices],
         proof=proof,
         proof_flags=proof_flags,
     )
 
 
-def process_multi_proof(multiproof: MultiProof) -> bytes:
+def process_multi_proof(multiproof: CoreMultiProof) -> bytes:
     for leaf in multiproof.leaves:
         check_valid_merkle_node(leaf)
 
