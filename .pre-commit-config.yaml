@@ -34,6 +34,7 @@ repos:
             "-rn", # Only display messages
             "-sn", # Don't display the score
           ]
+        require_serial: true
 
   - repo: local
     hooks:
@@ -42,3 +43,4 @@ repos:
         entry: mypy
         language: system
         types: [ python ]
+        require_serial: true
