@@ -216,7 +216,7 @@ class StandardMerkleTree(Generic[T]):
 
     def _validate_value(self, value_index: int) -> bytes:
         check_bounds(self.values, value_index)
-        leaf: LeafValue[T] = self.values[value_index]
+        leaf = self.values[value_index]
         check_bounds(self.tree, leaf.tree_index)
         leaf_hash = standard_leaf_hash(leaf.value, self.leaf_encoding)
 
