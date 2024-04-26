@@ -75,7 +75,7 @@ def check_leaf_node(tree: list[Any], i: int) -> None:
 
 def check_valid_merkle_node(node: bytes) -> None:
     if not is_valid_merkle_node(node):
-        raise ValueError("Merkle tree nodes must be Uint8Array of length 32")
+        raise ValueError("Merkle tree nodes must be byte array of length 32")
 
 
 def make_merkle_tree(leaves: list[bytes]) -> list[bytes]:
