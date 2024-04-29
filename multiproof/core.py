@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Any
 
 from web3 import Web3
@@ -8,9 +9,9 @@ from multiproof.bytes import compare_bytes, concat_bytes, equals_bytes
 
 
 @dataclass
-class MultiProof:
-    leaves: list[Any]
-    proof: list[Any]
+class CoreMultiProof:
+    leaves: list[bytes]
+    proof: list[bytes]
     proof_flags: list[bool]
 
 
@@ -41,15 +42,15 @@ def sibling_index(i: int) -> int:
     raise ValueError('Root has no siblings')
 
 
-def is_tree_node(tree: list[Any], i: int) -> bool:
+def is_tree_node(tree: list[bytes], i: int) -> bool:
     return 0 <= i < len(tree)
 
 
-def is_internal_node(tree: list[Any], i: int) -> bool:
+def is_internal_node(tree: list[bytes], i: int) -> bool:
     return is_tree_node(tree, left_child_index(i))
 
 
-def is_leaf_node(tree: list[Any], i: int) -> bool:
+def is_leaf_node(tree: list[bytes], i: int) -> bool:
     return is_tree_node(tree, i) and not is_internal_node(tree, i)
 
 
@@ -57,24 +58,24 @@ def is_valid_merkle_node(node: bytes) -> bool:
     return len(node) == 32
 
 
-def check_tree_node(tree: list[Any], i: int) -> None:
+def check_tree_node(tree: list[bytes], i: int) -> None:
     if not is_tree_node(tree, i):
         raise ValueError("Index is not in tree")
 
 
-def check_internal_node(tree: list[Any], i: int) -> None:
+def check_internal_node(tree: list[bytes], i: int) -> None:
     if not is_internal_node(tree, i):
         raise ValueError("Index is not an internal tree node")
 
 
-def check_leaf_node(tree: list[Any], i: int) -> None:
+def check_leaf_node(tree: list[bytes], i: int) -> None:
     if not is_leaf_node(tree, i):
         raise ValueError("Index is not a leaf")
 
 
 def check_valid_merkle_node(node: bytes) -> None:
     if not is_valid_merkle_node(node):
-        raise ValueError("Merkle tree nodes must be Uint8Array of length 32")
+        raise ValueError("Merkle tree nodes must be byte array of length 32")
 
 
 def make_merkle_tree(leaves: list[bytes]) -> list[bytes]:
@@ -118,14 +119,14 @@ def process_proof(leaf: bytes, proof: list[bytes]) -> bytes:
     return result
 
 
-def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
+def get_multi_proof(tree: list[bytes], indices: list[int]) -> CoreMultiProof:
     for index in indices:
         check_leaf_node(tree, index)
 
     indices = sorted(indices, reverse=True)
 
-    for i, p in enumerate(indices[1:]):
-        if p == indices[i]:
+    for prev_index, next_index in pairwise(indices):
+        if prev_index == next_index:
             raise ValueError("Cannot prove duplicated index")
 
     stack = indices[:]
@@ -149,14 +150,14 @@ def get_multi_proof(tree: list[bytes], indices: list[int]) -> MultiProof:
     if len(indices) == 0:
         proof.append(tree[0])
 
-    return MultiProof(
+    return CoreMultiProof(
         leaves=[tree[i] for i in indices],
         proof=proof,
         proof_flags=proof_flags,
     )
 
 
-def process_multi_proof(multiproof: MultiProof) -> bytes:
+def process_multi_proof(multiproof: CoreMultiProof) -> bytes:
     for leaf in multiproof.leaves:
         check_valid_merkle_node(leaf)
 
