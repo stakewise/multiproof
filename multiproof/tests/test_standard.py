@@ -1,5 +1,4 @@
-import unittest
-
+import pytest
 from web3 import Web3
 
 from multiproof.bytes import to_hex
@@ -10,16 +9,18 @@ ZERO_BYTES = bytearray(32)
 ZERO = to_hex(ZERO_BYTES)
 
 
-def characters(s: str) -> tuple[list[list[str]], StandardMerkleTree]:
+def make_tree(s: str, sort_leaves: bool = True) -> tuple[list[list[str]], StandardMerkleTree]:
     l = [[x] for x in s]
-    tree = StandardMerkleTree.of(l, ['string'])
+    tree = StandardMerkleTree.of(l, ['string'], sort_leaves)
     return l, tree
 
 
-class StandartTestCase(unittest.TestCase):
-    def test_valid_single_proofs(self):
+class TestStandartTestCase:
+
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_valid_single_proofs(self, sort_leaves):
         "generates valid single proofs for all leaves"
-        _, tree = characters('abcdef')
+        _, tree = make_tree('abcdef', sort_leaves)
         tree.validate()
 
         for index, leaf in enumerate(tree.values):
@@ -31,18 +32,20 @@ class StandartTestCase(unittest.TestCase):
             assert tree.verify_leaf(leaf, proof1)
             assert StandardMerkleTree.verify(tree.root, ['string'], leaf.value, proof1)
 
-    def test_invalid_single_proofs(self):
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_invalid_single_proofs(self, sort_leaves):
         "rejects invalid proofs"
-        _, tree = characters('abcdef')
-        _, other_tree = characters('abc')
+        _, tree = make_tree('abcdef', sort_leaves)
+        _, other_tree = make_tree('abc', sort_leaves)
         leaf = ['a']
         invalid_proof = other_tree.get_proof(leaf)
         assert not tree.verify_leaf(leaf, invalid_proof)
         assert not StandardMerkleTree.verify(tree.root, ['string'], leaf, invalid_proof)
 
-    def test_valid_multiproofs(self):
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_valid_multiproofs(self, sort_leaves):
         "generates valid multiproofs"
-        values, tree = characters('abcdef')
+        values, tree = make_tree('abcdef', sort_leaves)
         tree.validate()
 
         for ids in [[], [0, 1], [0, 1, 5], [1, 3, 4, 5], [0, 2, 4, 5], [0, 1, 2, 3, 4, 5]]:
@@ -54,17 +57,19 @@ class StandartTestCase(unittest.TestCase):
             assert tree.verify_multi_proof_leaf(proof1)
             assert StandardMerkleTree.verify_multi_proof(tree.root, ['string'], pf)
 
-    def test_invalid_multiproofs(self):
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_invalid_multiproofs(self, sort_leaves):
         "reject invalid multiproofs"
-        _, tree = characters('abcdef')
-        _, other_tree = characters('abc')
+        _, tree = make_tree('abcdef', sort_leaves)
+        _, other_tree = make_tree('abc', sort_leaves)
         leaves = [['a'], ['b'], ['c']]
         multi_proof = other_tree.get_multi_proof(leaves)
         assert not tree.verify_multi_proof_leaf(multi_proof)
         assert not StandardMerkleTree.verify_multi_proof(tree.root, ['string'], multi_proof)
 
-    def test_dump_and_load(self):
-        _, tree = characters('abcdef')
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_dump_and_load(self, sort_leaves):
+        _, tree = make_tree('abcdef', sort_leaves)
         tree2 = StandardMerkleTree.load(tree.dump())
         tree2.validate()
 
@@ -72,23 +77,24 @@ class StandartTestCase(unittest.TestCase):
         assert tree2.values == tree.values
         assert tree2.tree == tree.tree
 
-    def test_out_of_bonds(self):
-        _, tree = characters('a')
-        with self.assertRaises(Exception) as context:
+    @pytest.mark.parametrize('sort_leaves', (True, False))
+    def test_out_of_bonds(self, sort_leaves):
+        _, tree = make_tree('a', sort_leaves)
+        with pytest.raises(Exception) as context:
             tree.get_proof(1)
-            self.assertTrue('Index out of bounds' in context.exception)
+            assert 'Index out of bounds' in context.exception
 
     def test_reject_unrecognized_tree(self):
-        with self.assertRaises(Exception) as context:
+        with pytest.raises(Exception) as context:
             StandardMerkleTree.load(
                 StandardMerkleTreeData(
                     tree=[], values=[], leaf_encoding=['uint256'], format='nonstandard'
                 )
             )
-            self.assertTrue("Unknown format 'nonstandard'" in context.exception)
+            assert "Unknown format 'nonstandard'" in context.exception
 
     def test_reject_malformed(self):
-        with self.assertRaises(Exception) as context:
+        with pytest.raises(Exception) as context:
             tree1 = StandardMerkleTree.load(
                 StandardMerkleTreeData(
                     format='standard-v1',
@@ -98,9 +104,9 @@ class StandartTestCase(unittest.TestCase):
                 )
             )
             tree1.get_proof(0)
-            self.assertTrue("Merkle tree does not contain the expected value" in context.exception)
+            assert "Merkle tree does not contain the expected value" in context.exception
 
-        with self.assertRaises(Exception) as context:
+        with pytest.raises(Exception) as context:
             tree2 = StandardMerkleTree.load(
                 StandardMerkleTreeData(
                     format='standard-v1',
@@ -110,24 +116,24 @@ class StandartTestCase(unittest.TestCase):
                 )
             )
             tree2.get_proof(0)
-            self.assertTrue("Unable to prove value" in context.exception)
+            assert "Unable to prove value" in context.exception
 
     def test_render_tree(self):
         "generates valid multiproofs"
-        _, tree = characters('a')
+        _, tree = make_tree('a')
 
         expected = '''0) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c'''
-        self.assertEqual(str(tree), expected)
+        assert str(tree) == expected
 
-        _, tree = characters('ab')
+        _, tree = make_tree('ab')
         expected = '''
 0) fa914d99a18dc32d9725b3ef1c50426deb40ec8d0885dac8edcc5bfd6d030016
 ├─ 1) 9c15a6a0eaeed500fd9eed4cbeab71f797cefcc67bfd46683e4d2e6ff7f06d1c
 └─ 2) 19ba6c6333e0e9a15bf67523e0676e2f23eb8e574092552d5e888c64a4bb3681
         '''.strip()
-        self.assertEqual(str(tree), expected)
+        assert str(tree) == expected
 
-        _, tree = characters('abc')
+        _, tree = make_tree('abc')
 
         expected = '''
 0) f2129b5a697531ef818f644564a6552b35c549722385bc52aa7fe46c0b5f46b1
@@ -136,4 +142,4 @@ class StandartTestCase(unittest.TestCase):
 │  └─ 4) 19ba6c6333e0e9a15bf67523e0676e2f23eb8e574092552d5e888c64a4bb3681
 └─ 2) 9cf5a63718145ba968a01c1d557020181c5b252f665cf7386d370eddb176517b
     '''.strip()
-        self.assertEqual(str(tree), expected)
+        assert str(tree) == expected
