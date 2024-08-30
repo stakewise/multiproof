@@ -1,9 +1,9 @@
 # Stakewise python fork of [@openzeppelin/merkle-tree](https://github.com/OpenZeppelin/merkle-tree)
 
-A Python library to generate merkle trees and merkle proofs.
+A Python library to generate Merkle trees and Merkle proofs.
 
 Well suited for airdrops and similar mechanisms in combination with OpenZeppelin Contracts MerkleProof utilities.
-[`MerkleProof`]: https://docs.openzeppelin.com/contracts/4.x/api/utils#MerkleProof
+[`MerkleProof`]: <https://docs.openzeppelin.com/contracts/4.x/api/utils#MerkleProof>
 
 ## Quick Start
 
@@ -12,7 +12,8 @@ poetry add multiproof
 ```
 
 ### Building a Tree
-```python
+
+``` python
 import json
 
 from multiproof import StandardMerkleTree
@@ -23,9 +24,9 @@ values = [
     ["0x1111111111111111111111111111111111111111", 5000000000000000000],
     ["0x2222222222222222222222222222222222222222", 2500000000000000000]
 ]
-# Build the merkle tree. Set the encoding to match the values.
+# Build the Merkle tree. Set the encoding to match the values.
 tree = StandardMerkleTree.of(values, ["address", "uint256"])
-# Print the merkle root. You will probably publish this value on chain in a smart contract.
+# Print the Merkle root. You will probably publish this value on chain in a smart contract.
 print('Merkle Root:', tree.root)
 # Write a file that describes the tree. You will distribute this to users so they can generate proofs for values in the tree.
 with open('tree.json', 'w') as file:
@@ -96,7 +97,7 @@ contract Verifier {
 
 ## Standard Merkle Trees
 
-This library works on "standard" merkle trees designed for Ethereum smart contracts. We have defined them with a few characteristics that make them secure and good for on-chain verification.
+This library works on "standard" Merkle trees designed for Ethereum smart contracts. We have defined them with a few characteristics that make them secure and good for on-chain verification.
 
 - The tree is shaped as a [complete binary tree](https://xlinux.nist.gov/dads/HTML/completeBinaryTree.html).
 - The leaves are sorted.
@@ -120,7 +121,7 @@ This is an opinionated design that we believe will offer the best out of the box
 
 ### Leaf ordering
 
-Each leaf of a merkle tree can be proven individually. The relative ordering of leaves is mostly irrelevant when the only objective is to prove the inclusion of individual leaves in the tree. Proving multiple leaves at once is however a little bit more difficult.
+Each leaf of a Merkle tree can be proven individually. The relative ordering of leaves is mostly irrelevant when the only objective is to prove the inclusion of individual leaves in the tree. Proving multiple leaves at once is however a little bit more difficult.
 
 This library proposes a mechanism to prove (and verify) that sets of leaves are included in the tree. These "multiproofs" can also be verified onchain using the implementation available in `@openzeppelin/contracts`. This mechanism requires the leaves to be ordered respective to their position in the tree. For example, if the tree leaves are (in hex form) `[ 0xAA...AA, 0xBB...BB, 0xCC...CC, 0xDD...DD]`, then you'd be able to prove `[0xBB...BB, 0xDD...DD]` as a subset of the leaves, but not `[0xDD...DD, 0xBB...BB]`.
 
@@ -128,13 +129,12 @@ Since this library knows the entire tree, you can generate a multiproof with the
 
 By default, the library orders the leaves according to their hash when building the tree. This is so that a smart contract can build the hashes of a set of leaves and order them correctly without any knowledge of the tree itself. Said differently, it is simpler for a smart contract to process a multiproof for leaves that it rebuilt itself if the corresponding tree is ordered.
 
-However, some trees are constructed iteratively from unsorted data, causing the leaves to be unsorted as well. For this library to be able to represent such trees, the call to `StandardMerkleTree.of` includes an option to disable sorting. Using that option, the leaves are kept in the order in which they were provided. Note that this option has no effect on your ability to generate and verify proofs and multiproofs in JavaScript, but that it may introduce challenges when verifying multiproofs onchain. We recommend only using it for building a representation of trees that are built (onchain) using an iterative process.
+However, some trees are constructed iteratively from unsorted data, causing the leaves to be unsorted as well. For this library to be able to represent such trees, the call to `StandardMerkleTree.of` includes an option to disable sorting. Using that option, the leaves are kept in the order in which they were provided. Note that this option has no effect on your ability to generate and verify proofs and multiproofs in Python, but that it may introduce challenges when verifying multiproofs onchain. We recommend only using it for building a representation of trees that are built (onchain) using an iterative process.
 
 ## API & Examples
 
 > **Note**
 > Consider reading the array of elements from a CSV file for easy interoperability with spreadsheets or other data processing pipelines.
-
 > **Note**
 > By default, leaves are sorted according to their hash. This is done so that multiproof generated by the library can more easily be verified onchain. This can be disabled using the optional third argument. See the [Leaf ordering](#leaf-ordering) section for more details.
 
@@ -150,7 +150,7 @@ from multiproof import StandardMerkleTree
 tree = StandardMerkleTree.of([['alice', '100'], ['bob', '200']], ['address', 'uint'], sort_leaves=True)
 ```
 
-Creates a standard merkle tree out of an array of the elements in the tree, along with their types for ABI encoding. For documentation on the syntax of the types, including how to encode structs, refer to the documentation for Ethers.js's [`AbiCoder`](https://docs.ethers.org/v5/api/utils/abi/coder/#AbiCoder-encode).
+Creates a standard Merkle tree out of an array of the elements in the tree, along with their types for ABI encoding. For documentation on the syntax of the types, including how to encode structs, refer to the documentation for Ethers.js's [`AbiCoder`](https://docs.ethers.org/v5/api/utils/abi/coder/#AbiCoder-encode).
 
 #### `StandardMerkleTree.load`
 
@@ -175,7 +175,7 @@ Loads the tree from a description previously returned by `tree.dump`.
 verified = StandardMerkleTree.verify(root, ['address', 'uint'], ['alice', '100'], proof);
 ```
 
-Returns a boolean that is `true` when the proof verifies that the value is contained in the tree given only the proof, merkle root, and encoding.
+Returns a boolean that is `true` when the proof verifies that the value is contained in the tree given only the proof, Merkle root, and encoding.
 
 #### `StandardMerkleTree.verify_multi_proof`
 
@@ -183,7 +183,7 @@ Returns a boolean that is `true` when the proof verifies that the value is conta
 is_valid = StandardMerkleTree.verify_multi_proof(root, leaf_encoding, multiproof)
 ```
 
-Returns a boolean that is `true` when the multiproof verifies that all the values are contained in the tree given only the multiproof, merkle root, and leaf encoding.
+Returns a boolean that is `true` when the multiproof verifies that all the values are contained in the tree given only the multiproof, Merkle root, and leaf encoding.
 
 #### Options
 
@@ -207,7 +207,7 @@ The root of the tree is a commitment on the values of the tree. It can be publis
 tree.dump()
 ```
 
-Returns a description of the merkle tree for distribution. It contains all the necessary information to reproduce the tree, find the relevant leaves, and generate proofs. You should distribute this to users in a web application or command line interface so they can generate proofs for their leaves of interest.
+Returns a description of the Merkle tree for distribution. It contains all the necessary information to reproduce the tree, find the relevant leaves, and generate proofs. You should distribute this to users in a web application or command line interface so they can generate proofs for their leaves of interest.
 
 #### `tree.get_proof`
 
@@ -275,6 +275,7 @@ It corresponds to the following expression in Solidity:
 ```solidity
 bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(alice, 100))));
 ```
+
 #### `Rendering the tree`
 
 ```python3
