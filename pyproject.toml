@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "multiproof"
-version = "v0.1.8"
+version = "v0.1.9"
 description = "A Python library to generate merkle trees and merkle proofs."
 authors = ["StakeWise Labs <info@stakewise.io>"]
 readme = "README.md"

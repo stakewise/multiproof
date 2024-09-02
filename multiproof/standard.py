@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from functools import cmp_to_key
 from typing import Generic, TypeVar
 
@@ -66,16 +66,19 @@ class StandardMerkleTree(Generic[T]):
             self._hash_lookup[to_hex(standard_leaf_hash(leaf_value.value, leaf_encoding))] = index
 
     @staticmethod
-    def of(values: list[T], leaf_encoding: list[str]) -> 'StandardMerkleTree[T]':
+    def of(
+            values: list[T], leaf_encoding: list[str], sort_leaves: bool = True
+    ) -> 'StandardMerkleTree[T]':
         hashed_values: list[HashedValue[T]] = []
         for index, value in enumerate(values):
             hashed_values.append(
                 HashedValue(value=value, index=index, hash=standard_leaf_hash(value, leaf_encoding))
             )
-        hashed_values = sorted(
-            hashed_values,
-            key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash)),  # type: ignore
-        )
+        if sort_leaves:
+            hashed_values = sorted(
+                hashed_values,
+                key=cmp_to_key(lambda a, b: compare_bytes(a.hash, b.hash)),  # type: ignore
+            )
 
         tree = make_merkle_tree([x.hash for x in hashed_values])
 
@@ -125,6 +128,19 @@ class StandardMerkleTree(Generic[T]):
             values=self.values,
             leaf_encoding=self.leaf_encoding,
         )
+
+    def to_json(self) -> dict:
+        return asdict(self.dump())
+
+    @staticmethod
+    def from_json(data: dict) -> 'StandardMerkleTree[T]':
+        tree_data = StandardMerkleTreeData(
+            tree=data['tree'],
+            values=[LeafValue(**item) for item in data['values']],
+            leaf_encoding=data['leaf_encoding'],
+            format=data.get('format', 'standard-v1'),
+        )
+        return StandardMerkleTree.load(tree_data)
 
     @property
     def root(self) -> HexStr:
