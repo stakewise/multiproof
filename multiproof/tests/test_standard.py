@@ -1,9 +1,9 @@
 import pytest
-from web3 import Web3
 
 from multiproof.bytes import to_hex
 from multiproof.standard import (LeafValue, StandardMerkleTree,
                                  StandardMerkleTreeData)
+from multiproof.utils import keccak
 
 ZERO_BYTES = bytearray(32)
 ZERO = to_hex(ZERO_BYTES)
@@ -16,7 +16,6 @@ def make_tree(s: str, sort_leaves: bool = True) -> tuple[list[list[str]], Standa
 
 
 class TestStandartTestCase:
-
     @pytest.mark.parametrize('sort_leaves', (True, False))
     def test_valid_single_proofs(self, sort_leaves):
         "generates valid single proofs for all leaves"
@@ -110,7 +109,7 @@ class TestStandartTestCase:
             tree2 = StandardMerkleTree.load(
                 StandardMerkleTreeData(
                     format='standard-v1',
-                    tree=[ZERO, ZERO, to_hex(Web3.keccak(Web3.keccak(ZERO_BYTES)))],
+                    tree=[ZERO, ZERO, to_hex(keccak(keccak(ZERO_BYTES)))],
                     values=[LeafValue(value=['0'], tree_index=2)],
                     leaf_encoding=['uint256'],
                 )
