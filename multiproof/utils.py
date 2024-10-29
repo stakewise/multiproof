@@ -15,6 +15,7 @@ def keccak(
     text: Optional[str] = None,
     hexstr: Optional[HexStr] = None,
 ) -> bytes:
+    """ Taken from web3py """
     if isinstance(primitive, (bytes, int, type(None))):
         input_bytes = to_bytes(primitive, hexstr=hexstr, text=text)
         return eth_utils_keccak(input_bytes)
