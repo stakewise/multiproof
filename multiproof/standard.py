@@ -4,14 +4,13 @@ from typing import Generic, TypeVar
 
 from eth_abi import encode as abi_encode
 from eth_typing import HexStr
-from web3 import Web3
 
 from multiproof.bytes import compare_bytes, equals_bytes, hex_to_bytes, to_hex
 from multiproof.core import (CoreMultiProof, get_multi_proof, get_proof,
                              is_valid_merkle_tree, left_child_index,
                              make_merkle_tree, process_multi_proof,
                              process_proof, right_child_index)
-from multiproof.utils import check_bounds
+from multiproof.utils import check_bounds, keccak
 
 T = TypeVar('T')
 
@@ -48,7 +47,7 @@ class HashedValue(Generic[T]):
 
 
 def standard_leaf_hash(values: T, types: list[str]) -> bytes:
-    return Web3.keccak(Web3.keccak(abi_encode(types, values)))  # type: ignore
+    return keccak(keccak(abi_encode(types, values)))  # type: ignore
 
 
 class StandardMerkleTree(Generic[T]):
@@ -67,7 +66,7 @@ class StandardMerkleTree(Generic[T]):
 
     @staticmethod
     def of(
-            values: list[T], leaf_encoding: list[str], sort_leaves: bool = True
+        values: list[T], leaf_encoding: list[str], sort_leaves: bool = True
     ) -> 'StandardMerkleTree[T]':
         hashed_values: list[HashedValue[T]] = []
         for index, value in enumerate(values):
@@ -100,9 +99,7 @@ class StandardMerkleTree(Generic[T]):
         )
 
     @staticmethod
-    def verify(
-        root: HexStr, leaf_encoding: list[str], leaf_value: T, proof: list[HexStr]
-    ) -> bool:
+    def verify(root: HexStr, leaf_encoding: list[str], leaf_value: T, proof: list[HexStr]) -> bool:
         leaf_hash = standard_leaf_hash(leaf_value, leaf_encoding)
         implied_root = process_proof(leaf_hash, [hex_to_bytes(x) for x in proof])
         return equals_bytes(implied_root, hex_to_bytes(root))

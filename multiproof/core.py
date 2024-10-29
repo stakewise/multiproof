@@ -3,9 +3,8 @@ from dataclasses import dataclass
 from itertools import pairwise
 from typing import Any
 
-from web3 import Web3
-
 from multiproof.bytes import compare_bytes, concat_bytes, equals_bytes
+from multiproof.utils import keccak
 
 
 @dataclass
@@ -17,9 +16,9 @@ class CoreMultiProof:
 
 def hash_pair(a: bytes, b: bytes) -> bytes:
     if compare_bytes(a, b) < 0:
-        return Web3.keccak(concat_bytes(a, b))
+        return keccak(concat_bytes(a, b))
     # pylint: disable=arguments-out-of-order
-    return Web3.keccak(concat_bytes(b, a))
+    return keccak(concat_bytes(b, a))
 
 
 def left_child_index(i: int) -> int:
