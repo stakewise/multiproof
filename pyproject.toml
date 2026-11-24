@@ -1,25 +1,32 @@
-[tool.poetry]
+[project]
 name = "multiproof"
-version = "v0.1.10"
+version = "0.1.10"
 description = "A Python library to generate merkle trees and merkle proofs."
-authors = ["StakeWise Labs <info@stakewise.io>"]
+authors = [{ name = "StakeWise Labs", email = "info@stakewise.io" }]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/stakewise/multiproof"
 keywords = ["merkle-tree", "multiproof"]
+requires-python = ">=3.12,<4.0"
+dynamic = ["dependencies", "classifiers"]
+
+[project.urls]
+Repository = "https://github.com/stakewise/multiproof"
+
+[tool.poetry]
+requires-poetry = ">=2.4"
 packages = [
     { include = "multiproof" },
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 eth-abi = "^5.0.1"
 eth-utils = ">=5.1.0"
 eth-hash = {extras = ["pycryptodome"], version = "^0.7.0"}
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^2.14.5"
-mypy = "^0.971"
+pylint = "==3.3.9"
+mypy = "==1.18.2"
 pytest = "^7.1.2"
 pre-commit = "^2.20.0"
 Flake8-pyproject = "^1.1.0"
@@ -40,9 +47,9 @@ select = ["E121"]
 
 [tool.mypy]
 ignore_missing_imports = true
-python_version = "3.10"
+python_version = "3.12"
 disallow_incomplete_defs = true
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
