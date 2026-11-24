@@ -78,4 +78,4 @@ jobs:
 
       # Run tests
       - name: Run tests
-        run: poetry run python3 -m unittest discover multiproof/
+        run: poetry run pytest multiproof/
