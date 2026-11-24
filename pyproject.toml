@@ -1,12 +1,19 @@
-[tool.poetry]
+[project]
 name = "multiproof"
-version = "v0.1.10"
+version = "0.1.10"
 description = "A Python library to generate merkle trees and merkle proofs."
-authors = ["StakeWise Labs <info@stakewise.io>"]
+authors = [{ name = "StakeWise Labs", email = "info@stakewise.io" }]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/stakewise/multiproof"
 keywords = ["merkle-tree", "multiproof"]
+requires-python = ">=3.10,<4.0"
+dynamic = ["dependencies", "classifiers"]
+
+[project.urls]
+Repository = "https://github.com/stakewise/multiproof"
+
+[tool.poetry]
+requires-poetry = ">=2.4"
 packages = [
     { include = "multiproof" },
 ]
@@ -44,5 +51,5 @@ python_version = "3.10"
 disallow_incomplete_defs = true
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
